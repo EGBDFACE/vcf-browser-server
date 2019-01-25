@@ -171,9 +171,12 @@ app.post('/api/:fileLabel',function(req,res,next){
 	if(chunkList.uploadedChunk.length == chunkList.chunksNumber){
 	  chunkList.fileStatus = 'posted';
 	  console.log('write list file begin');
-	  fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
-	    if(err) throw err;
-		});
+	  (function(chunkList){
+	    fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
+	      if(err) throw err;
+		  fileAssemble(chunkList);
+		  });
+		})(JSON.parse(JSON.stringify(chunkList)));
 	  console.log('write file success');
 	  }
 	//let tempList = fs.readFileSync(`./fileUpload/${params.fileMd5}/list.json`,'utf-8');
@@ -203,3 +206,6 @@ app.use(function(err,req,res,next){
 });
 var server = app.listen(8081,'222.20.79.250');
 console.log('port is running on http://222.20.79.250');
+function fileAssemble(assembleChunkList){
+   
+  }
