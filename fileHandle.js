@@ -1,6 +1,6 @@
 var fs = require('fs');
 const assert = require('assert').strict;
-function fileAssemble(currentFileMd5){
+function assemble(currentFileMd5){
 //	var currentFileMd5 = '8cd01a88432d22671cd09f399e4f7175';
 	var chunkListString = fs.readFileSync(`./fileUpload/${currentFileMd5}/list.json`,'utf8');
 	//console.log(chunkListString);
@@ -17,6 +17,7 @@ function fileAssemble(currentFileMd5){
 		let chunkString = fs.readFileSync(`./fileUpload/${currentFileMd5}/${chunkList.uploadedChunk[i].chunkMd5}`,'utf8');
 	  let chunk = JSON.parse(chunkString);
 		let tempString='';
+//		console.log('i' + i);
 	  if(i == 0){
 	//		tempString = chunk.chunkFile.startLine + '\n' + chunk.chunkFile.Chrom+'\n';
 			tempString = chunk.chunkFile.startLine + '\n' + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n';
@@ -25,7 +26,7 @@ function fileAssemble(currentFileMd5){
 			let tempStartLine = chunk.chunkFile.startLine;
 			let tempStartLineArray = tempStartLine.split('\t');
 			let preTempEndLine = JSON.parse(fs.readFileSync(`./fileUpload/${currentFileMd5}/${chunkList.uploadedChunk[i-1].chunkMd5}`,'utf8')).chunkFile.endLine;
-			if((((+tempStartLineArray[0]<23)&&(+tempStartLineArray[0]>0))||(tempStartLineArray[0] == 'X')||(tempStartLineArray[0] == 'Y'))&&((tempStartLineArray[3].indexOf('A')!=-1)||(tempStartLineArray[3].indexOf('T')!=-1)||(tempStartLineArray[3].indexOf('C')!= -1)||(tempStartLineArray[3].indexOf('G') != -1))){
+			if((((+tempStartLineArray[0]<23)&&(+tempStartLineArray[0]>0))||(tempStartLineArray[0] == 'X')||(tempStartLineArray[0] == 'Y')||(tempStartLineArray[0].indexOf('hs') == 0)||(tempStartLineArray[0].indexOf('CHR') == 0)||(tempStartLineArray[0].indexOf('GL') == 0)||(tempStartLineArray[0].indexOf('MT') == 0)||(tempStartLineArray[0].indexOf('NC')==0))&&((tempStartLineArray[3].indexOf('A')!=-1)||(tempStartLineArray[3].indexOf('T')!=-1)||(tempStartLineArray[3].indexOf('C')!= -1)||(tempStartLineArray[3].indexOf('G') != -1))){
 				tempString = tempString + dealUnsolvedLine(tempString,preTempEndLine) + '\n';
 				tempString = tempString + dealUnsolvedLine(tempString,tempStartLine) + '\n';
 			}
@@ -33,11 +34,13 @@ function fileAssemble(currentFileMd5){
 				tempString = tempString + dealUnsolvedLine(tempString,preTempEndLine + tempStartLine) +'\n';
 			}
 		}
+		console.log('1'+tempString)
 		var body = chunk.chunkFile.body;
 	//	console.log(body);
 		for(var j=0;j< chunk.chunkFile.body.length;j++){
 			tempString = tempString + body[j].CHROM + '\t' + body[j].POS + '\t' + body[j].ID + '\t' + body[j].REF + '\t' + body[j].ALT + '\t' + body[j].QUAL + '\t' + body[j].FILTER + '\t' + body[j].INFO + '\n';
 		}
+		console.log('2'+tempString);
 		if(i == chunkList.chunksNumber-1){
 	//		let tempEndLine = chunk.chunkFile.endLine.split('\t');
 	//		tempString = tempString + tempEndLine[0] + '\t' + tempEndLine[1] +'\t' + tempEndLine[2] + '\t' + tempEndLine[3] + '\t' + tempEndLine[4] + '\t' + tempEndLine[5] + '\t'+ tempEndLine[6] + '\t';
@@ -52,7 +55,9 @@ function fileAssemble(currentFileMd5){
 	//		else{
 	//		tempString = tempString + chunk.chunkFile.endLine;
 			let tempEndLine = chunk.chunkFile.endLine;
-			tempString = tempString + dealUnsolvedLine(tempString,tempEndLine);
+//			tempString = tempString + dealUnsolvedLine(tempString,tempEndLine);
+  			tempString = dealUnsolvedLine(tempString,tempEndLine);
+			console.log('3'+tempString);
 		}
 	//	let chunkReadStream = fs.createReadStream(tempString);
 	//  writeStream.on('pipe',(src) => {
@@ -64,7 +69,8 @@ function fileAssemble(currentFileMd5){
 	//	console.log(chunkReadStream);
 	//	chunkReadStream.unpipe(writeStream);
 	//	console.log(writeStream);
-		  writeStream.write(tempString);
+	 console.log('4'+ tempString);	 
+	 writeStream.write(tempString);
 	}
 }
 function dealUnsolvedLine(totalString,lineString){
@@ -114,5 +120,5 @@ function compare(propertyName){
 	};
 }
 module.exports = {
-  assemble : fileAssemble
+  assemble : assemble
   }
