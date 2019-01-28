@@ -1,5 +1,7 @@
-var fs = require('fs');
+const fs = require('fs');
+const exec = require('child_process').exec;
 const assert = require('assert').strict;
+
 function assemble(currentFileMd5){
 //	var currentFileMd5 = '8cd01a88432d22671cd09f399e4f7175';
 	var chunkListString = fs.readFileSync(`./fileUpload/${currentFileMd5}/list.json`,'utf8');
@@ -119,6 +121,21 @@ function compare(propertyName){
 		}
 	};
 }
+function runVep(currentFileMd5){
+  var inputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.vcf`;
+  var outputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.txt`;
+  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/.vep --cache_version 94 --force_overwrite`;
+  exec(cmdStr,function(err,stdout,stderr){
+    if(err){
+	  throw err;
+	  }
+	else{
+	  console.log('run vep success');
+	  console.log(stdout);
+	  }
+  });
+}
 module.exports = {
-  assemble : assemble
+  assemble : assemble,
+  runVep : runVep
   }

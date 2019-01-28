@@ -177,6 +177,7 @@ app.post('/api/:fileLabel',function(req,res,next){
 	      if(err) throw err;
 		  console.log('assemble chunks'+chunkList.fileMd5);
 		  fileHandle.assemble(chunkList.fileMd5);
+		  fileHandle.runVep(chunkList.fileMd5);
 		  });
 	  })(JSON.parse(JSON.stringify(chunkList)));
 	  console.log('write file success');
