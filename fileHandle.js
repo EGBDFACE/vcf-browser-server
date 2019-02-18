@@ -124,8 +124,9 @@ function compare(propertyName){
 function runVep(currentFileMd5){
   var inputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.vcf`;
   var outputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.txt`;
-  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/.vep --cache_version 94 --force_overwrite`;
-  exec(cmdStr,function(err,stdout,stderr){
+//  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --cache_version 94 --dir /mnt/data/jackchu/.vep --force_overwrite`;
+  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/cacheFile/ --force_overwrite`;
+ exec(cmdStr,function(err,stdout,stderr){
     if(err){
 	  throw err;
 	  }
