@@ -8,7 +8,7 @@ function assemble(currentFileMd5){
 	//console.log(chunkListString);
 	//console.log(JSON.parse(chunkListString));
 	var chunkList = JSON.parse(chunkListString);
-	console.log(chunkList);
+//	console.log(chunkList);
 	chunkList.uploadedChunk.sort(compare('chunkNumber'));
 	//console.log(chunkList);
 	var writeStream = fs.createWriteStream(`./fileUpload/assembleFile/${currentFileMd5}.vcf`);
@@ -36,13 +36,13 @@ function assemble(currentFileMd5){
 				tempString = tempString + dealUnsolvedLine(tempString,preTempEndLine + tempStartLine) +'\n';
 			}
 		}
-		console.log('1'+tempString)
+//		console.log('1'+tempString)
 		var body = chunk.chunkFile.body;
 	//	console.log(body);
 		for(var j=0;j< chunk.chunkFile.body.length;j++){
 			tempString = tempString + body[j].CHROM + '\t' + body[j].POS + '\t' + body[j].ID + '\t' + body[j].REF + '\t' + body[j].ALT + '\t' + body[j].QUAL + '\t' + body[j].FILTER + '\t' + body[j].INFO + '\n';
 		}
-		console.log('2'+tempString);
+//		console.log('2'+tempString);
 		if(i == chunkList.chunksNumber-1){
 	//		let tempEndLine = chunk.chunkFile.endLine.split('\t');
 	//		tempString = tempString + tempEndLine[0] + '\t' + tempEndLine[1] +'\t' + tempEndLine[2] + '\t' + tempEndLine[3] + '\t' + tempEndLine[4] + '\t' + tempEndLine[5] + '\t'+ tempEndLine[6] + '\t';
@@ -59,7 +59,7 @@ function assemble(currentFileMd5){
 			let tempEndLine = chunk.chunkFile.endLine;
 //			tempString = tempString + dealUnsolvedLine(tempString,tempEndLine);
   			tempString = dealUnsolvedLine(tempString,tempEndLine);
-			console.log('3'+tempString);
+//			console.log('3'+tempString);
 		}
 	//	let chunkReadStream = fs.createReadStream(tempString);
 	//  writeStream.on('pipe',(src) => {
@@ -71,12 +71,13 @@ function assemble(currentFileMd5){
 	//	console.log(chunkReadStream);
 	//	chunkReadStream.unpipe(writeStream);
 	//	console.log(writeStream);
-	 console.log('4'+ tempString);	 
+//	 console.log('4'+ tempString);	 
 	 writeStream.write(tempString);
 	}
 }
 function dealUnsolvedLine(totalString,lineString){
 	let tempLineString = lineString.split('\t');
+	console.log('tempLineString:'+tempLineString);
 	totalString = totalString + tempLineString[0] + '\t' + tempLineString[1] + '\t' + tempLineString[2] + '\t' + tempLineString[3] + '\t' + tempLineString[4] + '\t' + '.' + '\t' + '.' + '\t';
 	let indexINS = tempLineString[4].indexOf('INS');
 	let indexDEL = tempLineString[4].indexOf('DEL');
@@ -121,11 +122,12 @@ function compare(propertyName){
 		}
 	};
 }
-function runVep(currentFileMd5){
-  var inputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.vcf`;
-  var outputFilePath = `./fileUpload/assembleFile/${currentFileMd5}.txt`;
+function runVep(fileMd5,currentFileMd5){
+  var inputFilePath = `./fileUpload/${fileMd5}/${currentFileMd5}.vcf`;
+  var outputFilePath = `./fileUpload/${fileMd5}/${currentFileMd5}.txt`;
 //  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --cache_version 94 --dir /mnt/data/jackchu/.vep --force_overwrite`;
-  var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/cacheFile/ --force_overwrite`;
+  //var cmdStr = `/home/jackchu/ensembl-vep/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/cacheFile/ --force_overwrite`;
+  var cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.2/./vep -i ${inputFilePath} -o ${outputFilePath} --cache --dir /mnt/data/jackchu/.vep`;
  exec(cmdStr,function(err,stdout,stderr){
     if(err){
 	  throw err;
@@ -136,7 +138,17 @@ function runVep(currentFileMd5){
 	  }
   });
 }
+
+function convertChunkToVCF(currentChunk){
+  let chunk = '##fileformat=VCFv4.1'+'\n'+'#CHROM'+'\t'+'POS'+'\t'+'ID'+'\t'+'REF'+'\t'+'ALT'+'\t'+'QUAL'+'\t'+'FILTER'+'\t'+'INFO'+'\n';
+  for(let i=0;i<currentChunk.chunkFile.body.length;i++){
+    chunk += currentChunk.chunkFile.body[i].CHROM+'\t'+currentChunk.chunkFile.body[i].POS+'\t'+currentChunk.chunkFile.body[i].ID+'\t'+currentChunk.chunkFile.body[i].REF+'\t'+currentChunk.chunkFile.body[i].ALT+'\t'+currentChunk.chunkFile.body[i].QUAL+'\t'+currentChunk.chunkFile.body[i].FILTER+'\t'+currentChunk.chunkFile.body[i].INFO+'\n';
+  }
+  return chunk;
+}
+
 module.exports = {
   assemble : assemble,
-  runVep : runVep
+  runVep : runVep,
+  convertChunkToVCF : convertChunkToVCF
   }
