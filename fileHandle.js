@@ -3,7 +3,6 @@ const exec = require('child_process').exec;
 const assert = require('assert').strict;
 
 function assemble(currentFileMd5){
-//	var currentFileMd5 = '8cd01a88432d22671cd09f399e4f7175';
 	var chunkListString = fs.readFileSync(`./fileUpload/${currentFileMd5}/list.json`,'utf8');
 	//console.log(chunkListString);
 	//console.log(JSON.parse(chunkListString));
