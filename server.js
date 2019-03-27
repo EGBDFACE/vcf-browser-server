@@ -5,6 +5,7 @@ var fs = require('fs');
 var url = require('url');
 var fileHandle = require('./fileHandle.js');
 var exec = require('child_process').exec;
+const readline = require('readline');
 
 let chunkList = {
   fileMd5:'',
@@ -81,36 +82,64 @@ app.post('/api/:fileLabel',function(req,res,next){
 	fs.writeFile(`./fileUpload/${params.fileMd5}/${params.chunkMd5}.vcf`,fileHandle.convertChunkToVCF(req.body),(err)=>{
 	  if(err) throw err;
 	  (function(fileMd5,chunkMd5){
-		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats`;
+//		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats`;
+		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_scor`;
 		exec(cmdStr,function(err,stdout,stderr){
 		  if(err){
 			throw err;
 			}
 		  else{
-			fs.readFile(`/home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt`,'utf8',(err,data)=>{
-			 if(err) throw err;
-			 let addObj = {
-			  chunkMd5: params.chunkMd5,
-			  chunkNumber: params.chunkNumber
-			  };
-			 console.log(addObj);
-			 chunkList.uploadedChunk.push(addObj);
-			 if(chunkList.uploadedChunk.length == chunkList.chunksNumber){
-			  chunkList.fileStatus = 'posted';
-			  console.log('write list file begin');
-			  (function(chunkList){
-				fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
-				  if(err) throw err;
-				  console.log('assemble chunks'+chunkList.fileMd5);
-				  });
-			  })(JSON.parse(JSON.stringify(chunkList)));
-			  console.log('write file success');
-			  }
-			 let responseData = JSON.parse(JSON.stringify(chunkList));
-			 responseData.data = data;
-			 res.send(responseData);
-			  });
-		console.log(`${params.chunkMd5} uploaded success`);
+		  	let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt`);
+			const rl = readline.createInterface({
+				input : inputStream
+				});
+			let tempArray = [];
+			rl.on('line',(input)=>{
+				tempArray.push(JSON.parse(input));
+				});
+			rl.on('close',(err)=>{
+				if(err) throw err;
+				let addObj = {
+					chunkMd5: params.chunkMd5,
+					chunkNumber: params.chunkNumber
+					};
+				chunkList.uploadedChunk.push(addObj);
+				if(chunkList.uploadedChunk.length === chunkList.chunksNumber){
+					chunkList.fileStatus = 'posted';
+					(function(chunkList){
+						fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err)=>{
+							if(err) throw err;
+							});
+						})(JSON.parse(JSON.stringify(chunkList)));
+					}
+				let responseData = JSON.parse(JSON.stringify(chunkList));
+				responseData.data = JSON.stringify(tempArray);
+				res.send(responseData);
+				});
+//			fs.readFile(`/home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt`,'utf8',(err,data)=>{
+//			 if(err) throw err;
+//			 let addObj = {
+//			  chunkMd5: params.chunkMd5,
+//			  chunkNumber: params.chunkNumber
+//			  };
+//			 console.log(addObj);
+//			 chunkList.uploadedChunk.push(addObj);
+//			 if(chunkList.uploadedChunk.length == chunkList.chunksNumber){
+//			  chunkList.fileStatus = 'posted';
+//			  console.log('write list file begin');
+//			  (function(chunkList){
+//				fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
+//				  if(err) throw err;
+//				  console.log('assemble chunks'+chunkList.fileMd5);
+//				  });
+//			  })(JSON.parse(JSON.stringify(chunkList)));
+//			  console.log('write file success');
+//			  }
+//			 let responseData = JSON.parse(JSON.stringify(chunkList));
+//			 responseData.data = data;
+//			 res.send(responseData);
+//			  });
+//	   		console.log(`${params.chunkMd5} uploaded success`);
 		   }
 		 });
 		})(params.fileMd5,params.chunkMd5);
