@@ -83,7 +83,7 @@ app.post('/api/:fileLabel',function(req,res,next){
 	  if(err) throw err;
 	  (function(fileMd5,chunkMd5){
 //		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats`;
-		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_scor`;
+		let cmdStr = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.vcf -o /home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score`;
 		exec(cmdStr,function(err,stdout,stderr){
 		  if(err){
 			throw err;
