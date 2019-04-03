@@ -38,8 +38,27 @@ regulatory_region_variant: {term: "regulatory_region_variant", description: "A s
 feature_truncation: {term: "feature_truncation", description: "A sequence variant that causes the reduction of a …ic feature, with regard to the reference sequence", impact: "MODIFIER"},
 intergenic_variant: {term: "intergenic_variant", description: "A sequence variant located in the intergenic region, between genes", impact: "MODIFIER"}
 };
-console.log(SO_term_description_impact['intergenic_variant']);
+//console.log(SO_term_description_impact['intergenic_variant']);
 const geno_name_id_des_pos = JSON.parse(fs.readFileSync('./geno_name_id_des_pos.txt'));
-console.log(geno_name_id_des_pos);
+//console.log(geno_name_id_des_pos);
 const transcript_name_id_pos_proteinID = JSON.parse(fs.readFileSync('./transcript_name_id_pos_proteinID.txt'));
-console.log(transcript_name_id_pos_proteinID);
+
+module.exports = {
+	geno_name_id_des_pos : geno_name_id_des_pos,
+	transcript_name_id_pos_proteinID : transcript_name_id_pos_proteinID,
+	SO_term_description_impact: SO_term_description_impact
+	};
+//console.log(transcript_name_id_pos_proteinID);
+
+//function get_knowledge_map(data){
+//	let knowledge_structure = [];
+//	for(let i=0;i<data.length;i++){
+//		let tempObj ={};
+//		tempObj.VariantID = data[i].id;
+//		tempObj.VariantStart = data[i].start;
+//		tempObj.VariantEnd = data[i].end;
+//		tempObj.Ref = data[i].allele_string.slice(0,data[i].allele_string.indexOf('/'));
+//		tempObj.Alt = data[i].allele_string.slice(data[i].allele_string.indexOf('/')+1);
+//		tempObj.transcript_consequences=[];
+//		for(let j=0;j<data[i].transcript_consequences.length;j++){
+//			
