@@ -20,6 +20,7 @@ let chunkList = {
 
 const genoData = get_knowledge_map.geno_name_id_des_pos;
 const transcriptData = get_knowledge_map.transcript_name_id_pos_proteinID;
+const SOData = get_knowledge_map.SO_term_description_impact;
 
 app.all('*',function(req,res,next){
   res.setHeader('Access-Control-Allow-Origin','*');
@@ -115,6 +116,16 @@ app.post('/api/:fileLabel',function(req,res,next){
 				tempObj.transcript_consequences = [];
 				for(let j=0;j<temp.transcript_consequences.length;j++){
 					tempObj.transcript_consequences[j]={};
+					if(temp.transcript_consequences[j].consequence_terms){
+						tempObj.transcript_consequences[j].consequences = [];
+						for(let k=0;k<temp.transcript_consequences[j].consequence_terms.length;k++){
+							tempObj.transcript_consequences[j].consequences.push({
+								consequence_terms: temp.transcript_consequences[j].consequence_terms[k],
+								consequence_description: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].description:'',
+								consequence_impact: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].impact:''
+								});
+							}
+						}
 					let value = temp.transcript_consequences[j];
 					tempObj.transcript_consequences[j].gene_id = value.gene_id;
 					if(genoData[value.gene_id]){
@@ -133,7 +144,6 @@ app.post('/api/:fileLabel',function(req,res,next){
 							tempObj.transcript_consequences[j].protein_id = transcriptData[value.transcript_id].protein_id;
 							}
 					}
-					tempObj.transcript_consequences[j].consequence_terms = value.consequence_terms;
 					if(value.cds_start){
 						tempObj.transcript_consequences[j].cds_start = value.cds_start;
 						tempObj.transcript_consequences[j].cds_end = value.cds_end;
