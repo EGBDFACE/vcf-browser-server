@@ -102,63 +102,63 @@ app.post('/api/:fileLabel',function(req,res,next){
 				});
 			let tempArray = [];
 			rl.on('line',(input)=>{
-//				tempArray.push(JSON.parse(input));
-				let tempObj = {};
-				let temp = JSON.parse(input);
-				tempObj.VariantID = temp.id;
-				tempObj.VariantStart = temp.start;
-				tempObj.VariantEnd = temp.end;
-				tempObj.Ref = temp.allele_string.slice(0,temp.allele_string.indexOf('/'));
-				tempObj.Alt = temp.allele_string.slice(temp.allele_string.indexOf('/')+1);
-				tempObj.most_severe_consequence = temp.most_severe_consequence;
-				tempObj.seq_region_name = temp.seq_region_name;
-				if(temp.transcript_consequences){
-				tempObj.transcript_consequences = [];
-				for(let j=0;j<temp.transcript_consequences.length;j++){
-					tempObj.transcript_consequences[j]={};
-					if(temp.transcript_consequences[j].consequence_terms){
-						tempObj.transcript_consequences[j].consequences = [];
-						for(let k=0;k<temp.transcript_consequences[j].consequence_terms.length;k++){
-							tempObj.transcript_consequences[j].consequences.push({
-								consequence_terms: temp.transcript_consequences[j].consequence_terms[k],
-								consequence_description: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].description:'',
-								consequence_impact: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].impact:''
-								});
-							}
-						}
-					let value = temp.transcript_consequences[j];
-					tempObj.transcript_consequences[j].gene_id = value.gene_id;
-					if(genoData[value.gene_id]){
-						tempObj.transcript_consequences[j].gene_start = genoData[value.gene_id].geno_start;
-						tempObj.transcript_consequences[j].gene_end = genoData[value.gene_id].geno_end;
-						if(genoData[value.gene_id].geno_description){
-							tempObj.transcript_consequences[j].gene_description = genoData[value.gene_id].geno_description;
-							}
-					}
-					tempObj.transcript_consequences[j].transcript_id = value.transcript_id;
-					if(transcriptData[value.transcript_id]){
-						tempObj.transcript_consequences[j].transcript_start = transcriptData[value.transcript_id].transcript_start;
-						tempObj.transcript_consequences[j].transcript_end = transcriptData[value.transcript_id].transcript_end;
-						tempObj.transcript_consequences[j].transcript_name = transcriptData[value.transcript_id].transcript_name;
-						if(transcriptData[value.transcript_id].protein_id){
-							tempObj.transcript_consequences[j].protein_id = transcriptData[value.transcript_id].protein_id;
-							}
-					}
-					if(value.cds_start){
-						tempObj.transcript_consequences[j].cds_start = value.cds_start;
-						tempObj.transcript_consequences[j].cds_end = value.cds_end;
-						}
-					if(value.cdna_start){
-						tempObj.transcript_consequences[j].cdna_start = value.cdna_start;
-						tempObj.transcript_consequences[j].cdna_end = value.cdna_end;
-						}
-					if(value.protein_start){
-						tempObj.transcript_consequences[j].protein_start = value.protein_start;
-						tempObj.transcript_consequences[j].protein_end = value.protein_end;
-						}
-				}
-				}
-				tempArray.push(tempObj);
+				tempArray.push(JSON.parse(input));
+//				let tempObj = {};
+//				let temp = JSON.parse(input);
+//				tempObj.VariantID = temp.id;
+//				tempObj.VariantStart = temp.start;
+//				tempObj.VariantEnd = temp.end;
+//				tempObj.Ref = temp.allele_string.slice(0,temp.allele_string.indexOf('/'));
+//				tempObj.Alt = temp.allele_string.slice(temp.allele_string.indexOf('/')+1);
+//				tempObj.most_severe_consequence = temp.most_severe_consequence;
+//				tempObj.seq_region_name = temp.seq_region_name;
+//				if(temp.transcript_consequences){
+//				tempObj.transcript_consequences = [];
+//				for(let j=0;j<temp.transcript_consequences.length;j++){
+//					tempObj.transcript_consequences[j]={};
+//					if(temp.transcript_consequences[j].consequence_terms){
+//						tempObj.transcript_consequences[j].consequences = [];
+//						for(let k=0;k<temp.transcript_consequences[j].consequence_terms.length;k++){
+//							tempObj.transcript_consequences[j].consequences.push({
+//								consequence_terms: temp.transcript_consequences[j].consequence_terms[k],
+//								consequence_description: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].description:'',
+//								consequence_impact: SOData[temp.transcript_consequences[j].consequence_terms[k]]?SOData[temp.transcript_consequences[j].consequence_terms[k]].impact:''
+//								});
+//							}
+//						}
+//					let value = temp.transcript_consequences[j];
+//					tempObj.transcript_consequences[j].gene_id = value.gene_id;
+//					if(genoData[value.gene_id]){
+//						tempObj.transcript_consequences[j].gene_start = genoData[value.gene_id].geno_start;
+//						tempObj.transcript_consequences[j].gene_end = genoData[value.gene_id].geno_end;
+//						if(genoData[value.gene_id].geno_description){
+//							tempObj.transcript_consequences[j].gene_description = genoData[value.gene_id].geno_description;
+//							}
+//					}
+//					tempObj.transcript_consequences[j].transcript_id = value.transcript_id;
+//					if(transcriptData[value.transcript_id]){
+//						tempObj.transcript_consequences[j].transcript_start = transcriptData[value.transcript_id].transcript_start;
+//						tempObj.transcript_consequences[j].transcript_end = transcriptData[value.transcript_id].transcript_end;
+//						tempObj.transcript_consequences[j].transcript_name = transcriptData[value.transcript_id].transcript_name;
+//						if(transcriptData[value.transcript_id].protein_id){
+//							tempObj.transcript_consequences[j].protein_id = transcriptData[value.transcript_id].protein_id;
+//							}
+//					}
+//					if(value.cds_start){
+//						tempObj.transcript_consequences[j].cds_start = value.cds_start;
+//						tempObj.transcript_consequences[j].cds_end = value.cds_end;
+//						}
+//					if(value.cdna_start){
+//						tempObj.transcript_consequences[j].cdna_start = value.cdna_start;
+//						tempObj.transcript_consequences[j].cdna_end = value.cdna_end;
+//						}
+//					if(value.protein_start){
+//						tempObj.transcript_consequences[j].protein_start = value.protein_start;
+//						tempObj.transcript_consequences[j].protein_end = value.protein_end;
+//						}
+//				}
+//				}
+//				tempArray.push(tempObj);
 				});
 			rl.on('close',(err)=>{
 				if(err) throw err;
@@ -177,6 +177,9 @@ app.post('/api/:fileLabel',function(req,res,next){
 					}
 				let responseData = JSON.parse(JSON.stringify(chunkList));
 				responseData.data = JSON.stringify(tempArray);
+//				fs.writeFile('./tempData.txt',responseData.data,(err)=>{
+//					if(err) throw err;
+//					});
 				res.send(responseData);
 				});
 //			fs.readFile(`/home/jackchu/vcf-browser-server/fileUpload/${fileMd5}/${chunkMd5}.txt`,'utf8',(err,data)=>{
