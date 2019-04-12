@@ -3,12 +3,11 @@ var app = express();
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var url = require('url');
-var fileHandle = require('./fileHandle.js');
-var get_knowledge_map= require('./get_knowledge_map.js');
+var get_knowledge_map= require('./src/knowledgeMap/get_knowledge_map.js');
 var exec = require('child_process').exec;
 const readline = require('readline');
 
-import getChunkResponse from './src/fileHandle/getChunkResponse.js';
+var getChunkResponse = require('./src/fileHandle/getChunkResponse.js').getChunkResponse;
 
 let chunkList = {
   fileMd5:'',
@@ -47,17 +46,17 @@ app.param('fileLabel',function(req,res,next,fileLabel){
 		  res.send(chunkList);
 		  }
 		else{
-	      fs.readFile(`./fileUpload/${params.fileMd5}/list.json`,'utf8',(err,data)=>{
+	      fs.readFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}/list.json`,'utf8',(err,data)=>{
 		    if(!data){
 			  let sendObj = {
 				fileStatus: 'notposted'
 			  };
 			  res.send(sendObj);
-		      fs.mkdir(`./fileUpload/${params.fileMd5}`,(err)=>{
+		      fs.mkdir(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}`,(err)=>{
 		  	    if(err) throw err;
 		  	    });
 		  	  if((chunkList.fileMd5 != params.fileMd5)&&(chunkList.fileMd5 != '')){
-		  	    fs.writeFile(`./fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
+		  	    fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
 		  	      if(err) throw err;
 		  		  });
 		  	    }

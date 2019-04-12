@@ -117,12 +117,12 @@ function convertChunkToOncotator(value){
 	let alt = body[i].ALT.split(',');
 	for(let j=0;j<alt.length;j++){
 		let end = start;
-		if(body[i].REF.length >= alt[j]){
-			chunk += 'chr' + body[i].CHROM + '\t' + start + '\t' + end + '\t' + body[i].REF+alt[j] +'\n';
+		if(body[i].REF.length >= alt[j].length){
+			chunk += 'chr' + body[i].CHROM + '\t' + start + '\t' + end + '\t' + body[i].REF + '\t' + alt[j] +'\n';
 		}
 		else{
-			end = alt[j].length - body[i].REF.length + start ;
-			chunk += 'chr' + body[i].CHROM + '\t' + start + '\t' + end + '\t' + body[i].REF + alt[j] + '\n';
+			end = alt[j].length - body[i].REF.length + parseInt(start) ;
+			chunk += 'chr' + body[i].CHROM + '\t' + start + '\t' + end + '\t' + body[i].REF + '\t' + alt[j] + '\n';
 		}
 	}
   }

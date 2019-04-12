@@ -4,7 +4,7 @@ const genoData = knowledgeMap.geno_name_id_des_pos;
 const transcriptData = knowledgeMap.transcript_name_id_pos_proteinID;
 const SoData = knowledgeMap.SO_term_description_impact;
 
-export default function combineVepOncotator(vepData,oncotatorData){
+function combineVepOncotator(vepData,oncotatorData){
   let combineData = [];
   for(let i=0;i<vepData.length;i++){
     let itemVep = vepData[i];
@@ -16,8 +16,8 @@ export default function combineVepOncotator(vepData,oncotatorData){
 		chrom : itemVep.seq_region_name
 		},
 	  Codon: {
-	    Allele : itemVep.allele_string.slice(0,itemVep.allele_string.indexOf('/')),
-		Reference : itemVep.allele_string.slice(itemVep.allele_string.indexOf('/')+1)
+	    Reference : itemVep.allele_string.slice(0,itemVep.allele_string.indexOf('/')),
+		Allele : itemVep.allele_string.slice(itemVep.allele_string.indexOf('/')+1)
 	    }
 	};
 	if(itemVep.transcript_consequences){
@@ -27,17 +27,17 @@ export default function combineVepOncotator(vepData,oncotatorData){
 		let consequenceTerms = itemVep.transcript_consequences[j].consequence_terms;
 		if(consequenceTerms){
 		  combineData[i].transcriptConsequences[j].consequenceType = [];
-		  for(let k=0;k<consequencesTerms.length;k++){
+		  for(let k=0;k<consequenceTerms.length;k++){
 		    combineData[i].transcriptConsequences[j].consequenceType[k] = {
-			  Terms : consequencesTerms[k],
-			  SODescription : SoData[consequencesTerms[k]] ? SoData[consequencesTerms[k]].description : '',
-			  Impact : SoData[consequencesTerms[k]] ? SoData[consequencesTerms[k]].impact : ''
+			  Terms : consequenceTerms[k],
+			  SODescription : SoData[consequenceTerms[k]] ? SoData[consequenceTerms[k]].description : '',
+			  Impact : SoData[consequenceTerms[k]] ? SoData[consequenceTerms[k]].impact : ''
 			  };
 		  }
 		}
 		let consequences = itemVep.transcript_consequences[j];
 		let geneID = consequences.gene_id;
-		let transciptID = consequences.transcript_id;
+		let transcriptID = consequences.transcript_id;
 		combineData[i].transcriptConsequences[j].MutantGene = {
 		  ID : geneID,
 		  Location : {
@@ -55,20 +55,20 @@ export default function combineVepOncotator(vepData,oncotatorData){
 		  Name : transcriptData[transcriptID] ? transcriptData[transcriptID].transcript_name : ''
 		  };
 		combineData[i].transcriptConsequences[j].Protein = {
-		  ID :transcriptData[transcriptId] ? transcriptData[transcriptID].protein.id : '',
+		  ID :transcriptData[transcriptID] ? transcriptData[transcriptID].protein_id : '',
 		  Position : {
 		    start : consequences.protein_start ? consequences.protein_start : ( transcriptData[transcriptID] ? transcriptData[transcriptID].protein_start : '' ),
 			end : consequences.protein_end ? consequences.protein_end : ( transcriptData[transcriptID] ? transcriptData[transcriptID].protein_end : '' )
 			}
 		  };
-		combineData[i].transcriptConsequences[j].5UTR = {
-		  cDNAPosition : (consequences.consequences_terms.indexOf('5_prime_UTR_variant') != -1) ? {
+		combineData[i].transcriptConsequences[j].UTR5 = {
+		  cDNAPosition : (consequences.consequence_terms.indexOf('5_prime_UTR_variant') != -1) ? {
 			start : consequences.cdna_start ? consequences.cdna_start : '',
 			end : consequences.cdna_end ? consequences.cdna_end : ''
 			} : null 
 		  };
-		combineData[i].transcriptConsequences[j].3UTR = {
-		  cDNAPosition : (consequences.consequences_terms.indexOf('3_prime_UTR_variant') != -1) ? {
+		combineData[i].transcriptConsequences[j].UTR3 = {
+		  cDNAPosition : (consequences.consequence_terms.indexOf('3_prime_UTR_variant') != -1) ? {
 		    start : consequences.cdna_start ? consequences.cdna_start : '',
 			end : consequences.cdna_end ? consequences.cdna_end : ''
 			} : null
@@ -98,3 +98,7 @@ export default function combineVepOncotator(vepData,oncotatorData){
  }
  return combineData;
 }
+
+module.exports = {
+  combineVepOncotator : combineVepOncotator
+  }
