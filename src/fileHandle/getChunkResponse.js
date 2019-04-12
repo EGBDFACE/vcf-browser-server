@@ -9,13 +9,13 @@ const genoData = knowledgeMap.geno_name_id_des_pos;
 const transcriptData = knowledgeMap.transcript_name_id_pos_proteinID;
 const SoData = knowledgeMap.SO_term_description_impact;
 
-function getChunkResponse(req,res,chunkList){
+import combineVepOncotator from './combineVepOncotator.js';
+
+export default function getChunkResponse(req,res,chunkList){
   
   let params = url.parse(req.url,true).query;
 
   let fileMd5 = params.fileMd5,chunkMd5 = params.chunkMd5;
-  
-  let vep_result = [],oncotator_result = [];
 
   const promise_vep = new Promise(function(resolve,reject){
   	
@@ -26,6 +26,7 @@ function getChunkResponse(req,res,chunkList){
 	    if(err) throw err;
 		
 		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep_result.txt`);
+		let vep_result = [];
 		const rl_vep = readline.createInterface({
 		  input: inputStream
 		});
@@ -34,7 +35,7 @@ function getChunkResponse(req,res,chunkList){
 		  });
 		rl_vep.on('close',err=>{
 		  if(err) throw err;
-	      return resolve();
+	      return resolve(vep_result);
 		  });
 		});
 	});
@@ -52,7 +53,7 @@ function getChunkResponse(req,res,chunkList){
 		const rl_oncotator = readline.createInterface({
 		  input: inputStream
 		  });
-		let headerObj = {};
+		let headerObj = {},oncotator_result = [];;
 		rl_oncotator.on('line',input=>{
 		  if(input.indexOf('Hugo_Symbol') === 0){
 		    let headerArray = input.split('\t');
@@ -62,8 +63,7 @@ function getChunkResponse(req,res,chunkList){
 		  }else if(input.indexOf('#') === -1){
 		    let tempArray = input.split('\t');
 			if(itemArray[headerObj.dbNSFP_LR_pred] != ''){
-			  let itemObj = {
-			    dbSNP_RS : itemArray[headerObj.dbSNP_RS],
+			  oncotator_result[itemArray[headerObj.dbSNP_RS]] = {
 				dbNSFP_LR_pred : resolveMultiScore(itemArray[headerObj.dbNSFP_LR_pred]),
 				dbNSFP_LR_rankscore: resolveMultiScore(itemArray[headerObj.dbNSFP_LR_rankscore]),
 				dbNSFP_LR_score: resolveMultiScore(itemArray[headerObj.dbNSFP_LR_score]),
@@ -71,18 +71,34 @@ function getChunkResponse(req,res,chunkList){
 				dbNSFP_RadialSVM_rankscore: resolveMultiScore(itemArray[headerObj.dbNSFP_RadialSVM_rankscore]),
 				dbNSFP_RadialSVM_score:resolveMultiScore(itemArray[headerObj.dbNSFP_RadialSVM_score])
 			  };
-			  oncotator_result.push(itemObj);
 			}
 		  }
 		});
 		rl_oncotator.on('close',err=>{
 		  if(err) throw err;
-		  return resolve(promise_vep);
+		  return resolve(oncotator_result);
 		  });
 	  });
     });
   });
-
+  
+  const promist_both = Promise.all([promise_vep,promise_oncotator]).then(posts => {
+    let vepOncotatorData = combineVepOncotator(post[0],post[1]);
+	let itemChunkList = {
+	  chunkMd5 : params.chunkMd5,
+	  chunkNumber : params.chunkNumber
+	  };
+	chunkList.uploadedChunk.push(itemChunkList);
+	if(chunkList.uploadedChunk.length === chunkList.chunksNumber){
+	  chunkList.fileStatus = 'posted';
+	  fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),err=>{
+	    if(err) throw err;
+		});
+	  }
+	let responseData = chunkList;
+	responseData.data = JSON.stringify(vepOncotatorData);
+	res.send(responseData);
+    }
 }
 
 function resolveMultiScore(value){
