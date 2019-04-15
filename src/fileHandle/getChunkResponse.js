@@ -21,11 +21,15 @@ function getChunkResponse(req,res,chunkList){
   	
 	fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep.vcf`,convertChunk.convertChunkToVCF(req.body),(err)=>{
 	  if(err) throw err;
-	  let cmdStrVep = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep.vcf -o /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score`;
-	  exec(cmdStrVep,err=>{
+//	  let cmdStrVep = `nohup /home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i ${chunkMd5}_vep.vcf -o ${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score > ${chunkMd5}.log 2>&1 &`;
+//	  let cmdStrVep = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep.vcf -o /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score`;
+//	  let cmdStrVep = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i ${chunkMd5}_vep.vcf -o ${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score`;
+//	  exec(cmdStrVep,err=>{
+	  let cmdStrVep = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i ${chunkMd5}_vep.vcf -o ${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score > ${chunkMd5}_vep.log 2>&1`;
+	  exec(cmdStrVep,{cwd:`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/`},err=>{
 	    if(err) throw err;
-		
 		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep_result.txt`);
+//		let inputStream = fs.createReadStream(`${chunkMd5}_vep_result.txt`);
 		let vep_result = [];
 		const rl_vep = readline.createInterface({
 		  input: inputStream
@@ -42,13 +46,14 @@ function getChunkResponse(req,res,chunkList){
   });
 
   const promise_oncotator = new Promise(function(resolve,reject){
-
     fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator.txt`,convertChunk.convertChunkToOncotator(req.body),err=>{
 	  if(err) throw err;
-	  let cmdStrOncotator = `oncotator -v --db-dir /mnt/data/jackchu/temp/oncotator_v1_ds_April052016 /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator.txt /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv hg19`;
-	  exec(cmdStrOncotator,err=>{
-	    if(err) throw err;
-
+	  let cmdStrOncotator = `oncotator -v --db-dir /mnt/data/jackchu/temp/oncotator_v1_ds_April052016 ${chunkMd5}_oncotator.txt ${chunkMd5}_oncotator_result.tsv hg19 > ${chunkMd5}_oncotator.log 2>&1`;
+//	  let cmdStrOncotator = `oncotator -v --db-dir /mnt/data/jackchu/temp/oncotator_v1_ds_April052016 /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator.txt /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv hg19`;
+//	  exec(cmdStrOncotator,err=>{
+	  exec(cmdStrOncotator,{cwd : `/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/`,timeout: 40000},err=>{  
+//		if(err) throw err;
+ 		console.error(err);
 		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv`);
 		const rl_oncotator = readline.createInterface({
 		  input: inputStream
@@ -88,6 +93,7 @@ function getChunkResponse(req,res,chunkList){
 	  chunkMd5 : params.chunkMd5,
 	  chunkNumber : params.chunkNumber
 	  };
+	console.log('combine');
 	chunkList.uploadedChunk.push(itemChunkList);
 	if(chunkList.uploadedChunk.length === chunkList.chunksNumber){
 	  chunkList.fileStatus = 'posted';
