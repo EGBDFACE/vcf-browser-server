@@ -103,15 +103,17 @@ function runVep(fileMd5,currentFileMd5){
 
 function convertChunkToVCF(currentChunk){
   let chunk = '##fileformat=VCFv4.1'+'\n'+'#CHROM'+'\t'+'POS'+'\t'+'ID'+'\t'+'REF'+'\t'+'ALT'+'\t'+'QUAL'+'\t'+'FILTER'+'\t'+'INFO'+'\n';
-  for(let i=0;i<currentChunk.chunkFile.body.length;i++){
-    chunk += currentChunk.chunkFile.body[i].CHROM+'\t'+currentChunk.chunkFile.body[i].POS+'\t'+currentChunk.chunkFile.body[i].ID+'\t'+currentChunk.chunkFile.body[i].REF+'\t'+currentChunk.chunkFile.body[i].ALT+'\t'+currentChunk.chunkFile.body[i].QUAL+'\t'+currentChunk.chunkFile.body[i].FILTER+'\t'+currentChunk.chunkFile.body[i].INFO+'\n';
+  let body = currentChunk;
+  for(let i=0;i<body.length;i++){
+    chunk += body[i].CHROM+'\t'+body[i].POS+'\t'+body[i].ID+'\t'+body[i].REF+'\t'+body[i].ALT+'\t'+body[i].QUAL+'\t'+body[i].FILTER+'\t'+body[i].INFO+'\n';
   }
   return chunk;
 }
 
 function convertChunkToOncotator(value){
   let chunk = 'chr'+'\t'+'start'+'\t'+'end'+'\t'+'ref_allele'+'\t'+'alt_allele'+'\n';
-  let body = value.chunkFile.body;
+//  let body = value.chunkFile.body;
+  let body = value;
   for(let i=0;i<body.length;i++){
   	let start = body[i].POS;
 	let alt = body[i].ALT.split(',');
