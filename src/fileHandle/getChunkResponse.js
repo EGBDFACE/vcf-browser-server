@@ -52,8 +52,8 @@ function getChunkResponse(req,res,chunkList){
 //	  let cmdStrOncotator = `oncotator -v --db-dir /mnt/data/jackchu/temp/oncotator_v1_ds_April052016 /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator.txt /home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv hg19`;
 //	  exec(cmdStrOncotator,err=>{
 	  exec(cmdStrOncotator,{cwd : `/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/`,timeout: 40000},err=>{  
-//		if(err) throw err;
- 		console.error(err);
+		if(err) throw err;
+// 		console.error(err);
 		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv`);
 		const rl_oncotator = readline.createInterface({
 		  input: inputStream
@@ -89,19 +89,24 @@ function getChunkResponse(req,res,chunkList){
   
   const promist_both = Promise.all([promise_vep,promise_oncotator]).then(posts => {
     let vepOncotatorData = combineVepOncotator(posts[0],posts[1]);
+	fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}/${params.chunkMd5}_combine_data.txt`, JSON.stringify(vepOncotatorData), err=>{
+		if(err) throw err;
+		});
 	let itemChunkList = {
 	  chunkMd5 : params.chunkMd5,
-	  chunkNumber : params.chunkNumber
+//	  chunkNumber : params.chunkNumber
 	  };
-	console.log('combine');
+//	console.log('combine');
+	console.log(`[chunk] ${params.chunkMd5} posted`);
 	chunkList.uploadedChunk.push(itemChunkList);
-	if(chunkList.uploadedChunk.length === chunkList.chunksNumber){
+	if(chunkList.uploadedChunk.length == params.chunksNumber){
 	  chunkList.fileStatus = 'posted';
+	  console.log(`[file] ${chunkList.fileMd5} posted`);
 	  fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),err=>{
 	    if(err) throw err;
 		});
 	  }
-	let responseData = chunkList;
+	let responseData = JSON.parse(JSON.stringify(chunkList));
 	responseData.data = JSON.stringify(vepOncotatorData);
 	res.send(responseData);
     });

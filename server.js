@@ -8,15 +8,13 @@ var exec = require('child_process').exec;
 const readline = require('readline');
 
 var getChunkResponse = require('./src/fileHandle/getChunkResponse.js').getChunkResponse;
+var getPullChunkListRes = require('./src/fileHandle/getPullChunkListRes.js').getPullChunkListRes;
 
 let chunkList = {
   fileMd5:'',
   fileStatus: '',
   chunksNumber: 0,
-  uploadedChunk:{
-    chunkMd5:'',
-	chunkNumber:0
-	}
+  uploadedChunk: [],
   };
 
 const genoData = get_knowledge_map.geno_name_id_des_pos;
@@ -42,36 +40,8 @@ app.param('fileLabel',function(req,res,next,fileLabel){
 	let params = url.parse(req.url,true).query;
 	switch(fileLabel){
 	  case 'pullChunkList':
-	    if((chunkList.fileMd5 != '')&&(chunkList.fileMd5 == params.fileMd5)){
-		  res.send(chunkList);
-		  }
-		else{
-	      fs.readFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}/list.json`,'utf8',(err,data)=>{
-		    if(!data){
-			  let sendObj = {
-				fileStatus: 'notposted'
-			  };
-			  res.send(sendObj);
-		      fs.mkdir(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}`,(err)=>{
-		  	    if(err) throw err;
-		  	    });
-		  	  if((chunkList.fileMd5 != params.fileMd5)&&(chunkList.fileMd5 != '')){
-		  	    fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList),(err) => {
-		  	      if(err) throw err;
-		  		  });
-		  	    }
-		  	  chunkList.fileMd5 = params.fileMd5;
-		  	  chunkList.fileStatus = 'posting';
-		  	  chunkList.chunksNumber = params.chunksNumber;
-		  	  chunkList.uploadedChunk = [];
-		      }
-		    else{
-		     let listObj = JSON.parse(data);
-		     res.send(listObj);
-		     chunkList = JSON.parse(data);
-		     }
-		    });
-		 }
+	    console.log(`pullChunkList ${params.fileMd5}`);
+	    getPullChunkListRes(req,res,chunkList);
 		break;
 	  case 'upload_file_part':
 	    next();
