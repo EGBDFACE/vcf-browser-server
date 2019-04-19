@@ -40,15 +40,14 @@ app.param('fileLabel',function(req,res,next,fileLabel){
 	let params = url.parse(req.url,true).query;
 	switch(fileLabel){
 	  case 'pullChunkList':
-	    console.log(`pullChunkList ${params.fileMd5}`);
+	    console.log(`[pullChunkList] ${params.fileMd5}`);
 	    getPullChunkListRes(req,res,chunkList);
 		break;
-	  case 'upload_file_part':
+	  case 'uploadFilePart':
 	    next();
 		break;
-	  case 'checkoutInfo':
-	    let checkObj = req.body;
-		res.send('ok');
+	  default:
+	    res.send('api not supported');
 	}
 });
 

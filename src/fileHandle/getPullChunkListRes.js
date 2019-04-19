@@ -53,7 +53,6 @@ function readCombineFile(chunkList, params){
 	}
   let resData = JSON.parse(JSON.stringify(chunkList));
   resData.uploadedChunksCombineData = result;
-  console.log(chunkList);
   return resData;
   }
 
