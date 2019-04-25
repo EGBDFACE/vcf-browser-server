@@ -18,9 +18,7 @@ function runVepOncotator (chunk) {
   let fileMd5 = chunk.fileMd5,chunkMd5 = chunk.chunkMd5;
   
   if (!fs.existsSync(`${BASE_DIR}/${fileMd5}`)) {
-    fs.mkdir (`${BASE_DIR}/${fileMd5}`, err => {
-	  if (err) throw err;
-	  });
+    fs.mkdirSync (`${BASE_DIR}/${fileMd5}`);
 	}
 
   const promise_vep = new Promise(function(resolve,reject){

@@ -14,8 +14,9 @@ async function getChunkResult (chunk) {
   let item = {
     chunkMd5: chunk.chunkMd5,
 	chunkNumber: chunk.chunkNumber,
-	chunkResult: chunkResult
-	};
+	chunkResult: chunkResult,
+	fileMd5: chunk.fileMd5
+	}
   await chunkModel.insertChunk(item);
 
   let result = await listModel.getList (chunk.fileMd5);

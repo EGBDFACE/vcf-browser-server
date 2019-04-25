@@ -2,13 +2,13 @@ const url = 'mongodb://localhost:27017/';
 const MongoClient = require('mongodb').MongoClient;
 
 
-function getChunkData (chunkMd5) {
+function getChunkData (fileMd5) {
  return new Promise(function(resolve,reject){
   MongoClient.connect (url, { useNewUrlParser: true }, function (err, db) { 
     if (err) throw err;
 	
 	let dbase = db.db('vcf_browser_server');
-    let findObj = {'chunkMd5': chunkMd5};
+    let findObj = {'fileMd5': fileMd5};
 
 	dbase.collection('chunkFile').find(findObj).toArray(function (err, result) {
 	  if (err) throw err;

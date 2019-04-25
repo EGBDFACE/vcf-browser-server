@@ -11,6 +11,7 @@ async function getFileList (fileMd5, chunksNumber) {
 	  fileMd5: fileMd5,
 	  chunksNumber: chunksNumber,
 	  fileStatus: 'notPosted',
+	  uploadedChunkData: [],
 	  uploadedChunkList: []
 	  };
 	
@@ -19,13 +20,20 @@ async function getFileList (fileMd5, chunksNumber) {
 	return item;
 	}
   else{
-    let uploadedChunkList = result[0].uploadedChunkList;
+    let uploadedChunks = await chunkModel.getChunkData(fileMd5);
 	let data = [];
+    let uploadedChunkList = result[0].uploadedChunkList;
 
-	for (let i=0;i<uploadedChunkList.length;i++) {
-	  let chunkItem = await chunkModel.getChunkData(uploadedChunkList[i]);
-	  data = data.concat(chunkItem[0].chunkResult);
+	for (let i=0; i<uploadedChunks.length; i++) {
+	  data = data.concat(uploadedChunks[i].chunkResult);
 	  }
+//    let uploadedChunkList = result[0].uploadedChunkList;
+//	let data = [];
+//
+//	for (let i=0;i<uploadedChunkList.length;i++) {
+//	  let chunkItem = await chunkModel.getChunkData(uploadedChunkList[i]);
+//	  data = data.concat(chunkItem[0].chunkResult);
+//	  }
 	
 	let item = {
 	  fileMd5: fileMd5,
