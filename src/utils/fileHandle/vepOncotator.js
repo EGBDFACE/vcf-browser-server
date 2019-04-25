@@ -11,29 +11,28 @@ const SoData = knowledgeMap.SO_term_description_impact;
 
 var combineVepOncotator = require('./combineVepOncotator.js').combineVepOncotator;
 
-function getChunkResponse(req,res,chunkList){
-  
-  let params = url.parse(req.url,true).query;
-  
-  if(req.body.length == 0){
-    let resData = getResChunkList(chunkList,params);
-    resData.data = [];
-	res.send(resData);
-	return 0;
-	}
+const BASE_DIR = '/home/jackchu/vcf-browser-server/src/assets/fileUpload';
 
-  let fileMd5 = params.fileMd5,chunkMd5 = params.chunkMd5;
+function runVepOncotator (chunk) {
+ return new Promise(function(resolve,reject){
+  let fileMd5 = chunk.fileMd5,chunkMd5 = chunk.chunkMd5;
+  
+  if (!fs.existsSync(`${BASE_DIR}/${fileMd5}`)) {
+    fs.mkdir (`${BASE_DIR}/${fileMd5}`, err => {
+	  if (err) throw err;
+	  });
+	}
 
   const promise_vep = new Promise(function(resolve,reject){
   	
-	fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep.vcf`,convertChunk.convertChunkToVCF(req.body),(err)=>{
+	fs.writeFile(`${BASE_DIR}/${fileMd5}/${chunkMd5}_vep.vcf`,convertChunk.convertChunkToVCF(chunk.chunkData),(err)=>{
 	  if(err) throw err;
 	  let cmdStrVep = `/home/jackchu/ensembl/ensembl-vep-release-94.0/./vep -i ${chunkMd5}_vep.vcf -o ${chunkMd5}_vep_result.txt --cache --dir /mnt/data/jackchu/.vep/ --offline --force_overwrite --no_stats --json --plugin dbNSFP,/mnt/data/jackchu/dbNSFP/dbNSFP.gz,MetaLR_pred,MetaLR_rankscore,MetaLR_score,MetaSVM_pred,MetaSVM_rankscore,MetaSVM_score > ${chunkMd5}_vep.log 2>&1`;
-	  exec(cmdStrVep,{cwd:`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/`},err=>{
+	  exec(cmdStrVep,{cwd:`${BASE_DIR}/${fileMd5}/`},err=>{
 		if(err) {
 		  console.error(`[ERR] ${err.message}`);
 		  }
-		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_vep_result.txt`);
+		let inputStream = fs.createReadStream(`${BASE_DIR}/${fileMd5}/${chunkMd5}_vep_result.txt`);
 		let vep_result = [];
 		const rl_vep = readline.createInterface({
 		  input: inputStream
@@ -50,14 +49,14 @@ function getChunkResponse(req,res,chunkList){
   });
 
   const promise_oncotator = new Promise(function(resolve,reject){
-    fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator.txt`,convertChunk.convertChunkToOncotator(req.body),err=>{
+    fs.writeFile(`${BASE_DIR}/${fileMd5}/${chunkMd5}_oncotator.txt`,convertChunk.convertChunkToOncotator(chunk.chunkData),err=>{
 	  if(err) {
 	    console.error(`[ERR] ${err.message}`);
 		}
 	  let cmdStrOncotator = `oncotator -v --db-dir /mnt/data/jackchu/temp/oncotator_v1_ds_April052016 ${chunkMd5}_oncotator.txt ${chunkMd5}_oncotator_result.tsv hg19 > ${chunkMd5}_oncotator.log 2>&1`;
-	  exec(cmdStrOncotator,{cwd : `/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/`,timeout: 40000},err=>{  
+	  exec(cmdStrOncotator,{cwd : `${BASE_DIR}/${fileMd5}/`,timeout: 40000},err=>{  
 		if(err) console.error(`[ERR] ${err.message}`);
-		let inputStream = fs.createReadStream(`/home/jackchu/vcf-browser-server/src/fileUpload/${fileMd5}/${chunkMd5}_oncotator_result.tsv`);
+		let inputStream = fs.createReadStream(`${BASE_DIR}/${fileMd5}/${chunkMd5}_oncotator_result.tsv`);
 		const rl_oncotator = readline.createInterface({
 		  input: inputStream
 		  });
@@ -92,13 +91,9 @@ function getChunkResponse(req,res,chunkList){
   
   const promist_both = Promise.all([promise_vep,promise_oncotator]).then(posts => {
     let vepOncotatorData = combineVepOncotator(posts[0],posts[1]);
-	fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${params.fileMd5}/${params.chunkMd5}_combine_data.txt`, JSON.stringify(vepOncotatorData), err=>{
-		if(err) throw err;
-		});
-	let responseData = getResChunkList(chunkList,params);
-	responseData.data = JSON.stringify(vepOncotatorData);
-	res.send(responseData);
-    });
+    resolve(vepOncotatorData);
+	});
+ });
 }
 
 function resolveMultiScore(value){
@@ -110,25 +105,6 @@ function resolveMultiScore(value){
   }
 }
 
-function getResChunkList(chunkList,params){
-  console.log(`[chunk] ${params.chunkMd5} posted`);
-  chunkList.fileStatus = 'posting';
-  chunkList.uploadedChunk.push({
-    chunkMd5: params.chunkMd5
-	});
-  if(chunkList.uploadedChunk.length == params.chunksNumber){
-    chunkList.fileStatus = 'posted';
-	console.log(`[file] ${chunkList.fileMd5} posted`);
-	fs.writeFile(`/home/jackchu/vcf-browser-server/src/fileUpload/${chunkList.fileMd5}/list.json`,JSON.stringify(chunkList), err=>{
-	  if(err) {
-	    console.error(err.message);
-		}
-	  });
-	}
-  let resData = JSON.parse(JSON.stringify(chunkList));
-  return resData;
-}
-
 module.exports = {
-  getChunkResponse : getChunkResponse
+  runVepOncotator : runVepOncotator
   }

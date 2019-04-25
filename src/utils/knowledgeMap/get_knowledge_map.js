@@ -39,9 +39,9 @@ feature_truncation: {term: "feature_truncation", description: "A sequence varian
 intergenic_variant: {term: "intergenic_variant", description: "A sequence variant located in the intergenic region, between genes", impact: "MODIFIER"}
 };
 //console.log(SO_term_description_impact['intergenic_variant']);
-const geno_name_id_des_pos = JSON.parse(fs.readFileSync('/home/jackchu/vcf-browser-server/src/knowledgeMap/geno_name_id_des_pos.txt'));
+const geno_name_id_des_pos = JSON.parse(fs.readFileSync(__dirname + '/geno_name_id_des_pos.txt'));
 //console.log(geno_name_id_des_pos);
-const transcript_name_id_pos_proteinID = JSON.parse(fs.readFileSync('/home/jackchu/vcf-browser-server/src/knowledgeMap/transcript_name_id_pos_proteinID.txt'));
+const transcript_name_id_pos_proteinID = JSON.parse(fs.readFileSync(__dirname + '/transcript_name_id_pos_proteinID.txt'));
 
 module.exports = {
 	geno_name_id_des_pos : geno_name_id_des_pos,
