@@ -1,8 +1,25 @@
 const chunkModel = require('../models/chunkModel');
 const listModel = require('../models/listModel');
+const userModel = require('../models/userModel');
 
-async function getFileList (fileMd5, chunksNumber) {
-  
+async function getFileList (fileMd5, chunksNumber, userName, fileName) {
+
+  if(userName){
+	  
+	  let preUserInfo = await userModel.getUserInfo(userName);
+	  let preFileList = preUserInfo[0].fileList;
+	  
+	  if(JSON.stringify(preFileList).indexOf(fileMd5) === -1){
+	  	
+		let findObj = {name: userName};
+		let updateFileListObj = { 
+		  fileList: preFileList.concat([{fileName: fileName,fileMd5: fileMd5 }])
+		  }
+
+		await userModel.updateUserInfo(findObj, updateFileListObj);
+		}
+	}
+
   // 查询数据库文件状态
   let result = await listModel.getList(fileMd5);
 
@@ -16,12 +33,12 @@ async function getFileList (fileMd5, chunksNumber) {
 	  };
 	
 	listModel.insertItem(item);
-
+	
 	return item;
 	}
   else{
     let uploadedChunks = await chunkModel.getChunkData(fileMd5);
-	let data = [];
+		let data = [];
     let uploadedChunkList = result[0].uploadedChunkList;
 
 	for (let i=0; i<uploadedChunks.length; i++) {

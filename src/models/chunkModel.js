@@ -1,7 +1,6 @@
 const url = 'mongodb://localhost:27017/';
 const MongoClient = require('mongodb').MongoClient;
 
-
 function getChunkData (fileMd5) {
  return new Promise(function(resolve,reject){
   MongoClient.connect (url, { useNewUrlParser: true }, function (err, db) { 
@@ -24,16 +23,17 @@ function getChunkData (fileMd5) {
 function insertChunk (chunk) {
   
   MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) { 
-    if (err) throw err;
+	
+		if (err) throw err;
 
-	let dbo = db.db('vcf_browser_server');
+		let dbo = db.db('vcf_browser_server');
     
-	dbo.collection('chunkFile').insertOne(chunk, function(err, res) {
-	  if (err) throw err;
-	  db.close();
+		dbo.collection('chunkFile').insertOne(chunk, function(err, res) {
+	  	if (err) throw err;
+	  	db.close();
 	  });
 	});
-  }
+}
 
 module.exports = {
   getChunkData: getChunkData,
