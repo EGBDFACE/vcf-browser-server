@@ -18,16 +18,29 @@ let fn_signUp = async (ctx, next) => {
   await controller.addUser(ctx);
 };
 
+let fn_getSalt = async (ctx, next) => {
+  let userName = ctx.request.body.name;
+  
+  console.log(`[get Salt] name: ${userName}`);
+
+  await controller.getSalt(ctx);
+}
+
 module.exports = [
   {
     method: 'POST',
-	path: '/api/signIn',
-	func: fn_signIn
+	  path: '/api/signIn',
+	  func: fn_signIn
   },
   {
     method: 'POST',
-	path: '/api/signUp',
-	func: fn_signUp
+	  path: '/api/signUp',
+	  func: fn_signUp
+  },
+  {
+    method: 'POST',
+    path: '/api/getSalt',
+    func: fn_getSalt
   }
 ]
 

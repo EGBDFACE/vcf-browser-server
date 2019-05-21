@@ -13,9 +13,9 @@ async function getChunkResult (chunk) {
   
   let item = {
     chunkMd5: chunk.chunkMd5,
-	chunkNumber: chunk.chunkNumber,
-	chunkResult: chunkResult,
-	fileMd5: chunk.fileMd5
+    chunkNumber: chunk.chunkNumber,
+    chunkResult: chunkResult,
+    fileMd5: chunk.fileMd5
 	}
   await chunkModel.insertChunk(item);
 
@@ -28,20 +28,20 @@ async function getChunkResult (chunk) {
   let findObj = {'fileMd5': chunk.fileMd5};
   let updateObj = {
     'uploadedChunkList': uploadedChunkList,
-	'fileStatus': 'posting'
-	};
+	  'fileStatus': 'posting'
+  };
   
   if (uploadedChunkList.length === chunk.chunksNumber) {
     updateObj.fileStatus = 'posted';
 	}
-  
+  //直接更新由于子进程并行的原因可能会发生碰撞，就是同一时刻有两个子进程同时更新，最后出现少了某一个的情况
   await listModel.updateItem (findObj, updateObj);
   item.uploadedChunkList = uploadedChunkList; 
   return item;
- }
+}
 
- module.exports = {
+module.exports = {
    getChunkResult: getChunkResult
-   };
+};
 
     

@@ -49,4 +49,4 @@ module.exports = {
   getUserInfo: getUserInfo,
   addUser: addUser,
   updateUserInfo: updateUserInfo
-  };
+};
